@@ -1,0 +1,62 @@
+# Blackjack Strategy & Card Counter - Usage Guide
+
+This application is designed to help you practice blackjack basic strategy and Hi-Lo card counting. It provides real-time recommendations and tracks your virtual bankroll.
+
+## Getting Started
+
+To run the application:
+```bash
+python3 -m blackjack_app.interface
+```
+
+Upon startup, you will be prompted to:
+1.  **Number of Decks:** Enter the number of decks used in the shoe (default is 6).
+2.  **Dealer Rules:** Specify if the dealer hits on Soft 17 (H17) or stands (S17). This significantly affects the strategy.
+3.  **Initial Bankroll:** Set your starting virtual balance (default is 1000).
+
+## Main Menu Actions
+
+- **[H] New Hand:** Start a new round of blackjack.
+- **[C] Add Other Cards:** Input cards you've seen (e.g., cards dealt to other players) to keep the count accurate. Enter ranks separated by commas (e.g., `2, 10, A, 5`).
+- **[R] Reset Count:** Clear the running count and cards dealt (useful when a new shoe starts).
+- **[Q] Quit:** Exit the application.
+
+## Playing a Hand
+
+When you start a new hand:
+1.  **Unit Size:** Enter the base amount you want to bet (default 10).
+2.  **Dealer Upcard:** Enter the dealer's visible card.
+3.  **Player Cards:** Enter your first two cards.
+
+The application will then provide a recommendation:
+- **HIT:** Take another card.
+- **STAND:** Keep your current total.
+- **DOUBLE:** Double your bet and take exactly one more card.
+- **SPLIT:** Split your pair into two separate hands (track the first hand in the app).
+- **SURRENDER:** Forfeit the hand and lose half your bet (Late Surrender).
+
+After the hand is finished, input the result (Win, Loss, Push, Blackjack) to update your bankroll.
+
+## Card Counting (Hi-Lo System)
+
+The app uses the Hi-Lo counting system to calculate the "True Count":
+- **2, 3, 4, 5, 6:** +1
+- **7, 8, 9:** 0
+- **10, J, Q, K, A:** -1
+
+**True Count (TC)** is calculated as: `Running Count / Decks Remaining`.
+As the TC increases, the player's edge improves.
+
+### Recommendations based on Count:
+- **Bet Sizing:** The app suggests a bet multiplier based on the True Count (Kelly Criterion-lite). Higher TC = Higher Bet.
+- **Insurance:** If the True Count is 3 or higher, the app will advise taking insurance if the dealer shows an Ace.
+
+## Technical Details
+
+- **H17 vs S17:** The strategy engine automatically adjusts its lookup tables based on the dealer's rule.
+- **True Count Accuracy:** Decks remaining is calculated precisely based on the total number of cards dealt.
+- **Modular Design:**
+    - `models.py`: Data structures for Cards and Hands.
+    - `engine.py`: Core logic for counting, bankroll, and strategy.
+    - `strategy_tables.py`: O(1) lookup tables for optimal moves.
+    - `interface.py`: CLI user interface.

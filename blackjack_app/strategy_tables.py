@@ -8,8 +8,8 @@ S17_HARD = {
     12: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
     13: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
     14: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
-    15: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
-    16: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
+    15: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'R', 'H'],
+    16: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'R', 'R', 'R'],
     17: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
 }
 
@@ -37,8 +37,10 @@ S17_PAIRS = {
     'A': ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
 }
 
-H17_HARD = S17_HARD.copy()
+H17_HARD = {k: v[:] for k, v in S17_HARD.items()} # Deepish copy of lists
 H17_HARD[11] = ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D']
+H17_HARD[15][9] = 'R' # 15 vs A is Surrender in H17
+H17_HARD[17][9] = 'R' # 17 vs A is Surrender in H17
 
 H17_SOFT = S17_SOFT.copy()
 H17_SOFT[13] = ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] # A,2 vs 4 is Hit in S17, but Double in some H17. Let's use the old engine logic.

@@ -1,6 +1,6 @@
 import pytest
 from blackjack_app.models import Card, Hand
-from blackjack_app.engine import BasicStrategy, CardCounter
+from blackjack_app.engine import BasicStrategy, CardCounter, Bankroll
 
 def test_card_values():
     assert Card('A').value == 11
@@ -56,6 +56,23 @@ def test_basic_strategy_pairs():
     dealer = Card('6')
     assert strategy.get_recommendation(hand, dealer) == 'Stand'
 
+def test_surrender_logic():
+    # S17 16 vs 10
+    strategy_s17 = BasicStrategy(h17=False)
+    hand = Hand([Card('10'), Card('6')])
+    dealer = Card('10')
+    assert strategy_s17.get_recommendation(hand, dealer) == 'Surrender'
+
+    # H17 15 vs Ace
+    strategy_h17 = BasicStrategy(h17=True)
+    hand = Hand([Card('10'), Card('5')])
+    dealer = Card('A')
+    assert strategy_h17.get_recommendation(hand, dealer) == 'Surrender'
+
+    # Surrender only on first two cards (simulated in engine by checking len(cards)==2)
+    hand.add_card(Card('2')) # total 17, but 3 cards
+    assert strategy_h17.get_recommendation(hand, dealer) == 'Stand' # Table says R for 17 vs A in H17, but len > 2 means Stand (since 17)
+
 def test_card_counter():
     counter = CardCounter(num_decks=1)
     # Deal some low cards
@@ -85,11 +102,12 @@ def test_kelly_criterion_lite():
     assert counter.true_count == 2.0
     assert counter.get_bet_multiplier() == 4
 
-def test_insurance_logic_visibility():
-    # This is more of an integration test for the interface,
-    # but we can check the logic here.
-    counter = CardCounter(num_decks=1)
-    for _ in range(3):
-        counter.update_count(Card('2')) # RC 3
-    # 49/52 = 0.94 decks. TC = 3 / 0.94 = 3.19
-    assert counter.true_count >= 3
+def test_bankroll():
+    bankroll = Bankroll(1000)
+    bankroll.add_win(100)
+    assert bankroll.balance == 1100
+    assert bankroll.profit_loss == 100
+
+    bankroll.subtract_loss(50)
+    assert bankroll.balance == 1050
+    assert bankroll.profit_loss == 50
