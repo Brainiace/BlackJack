@@ -1,7 +1,6 @@
 import pytest
 from blackjack_app.models import Card, Hand
-from blackjack_app.engine import BasicStrategy
-from blackjack_app.counter import CardCounter
+from blackjack_app.engine import BasicStrategy, CardCounter
 
 def test_card_values():
     assert Card('A').value == 11
@@ -64,7 +63,33 @@ def test_card_counter():
         counter.update_count(Card('2'))
 
     assert counter.running_count == 5
-    # 52 - 5 = 47 cards left. 47/52 = 0.90 decks
-    # TC = 5 / 0.90 = 5.55
-    assert counter.true_count == 5.53 # 5 / (47/52) = 5.5319...
+    # 52 - 5 = 47 cards left. 47/52 = 0.9038 decks
+    # TC = 5 / 0.9038 = 5.532...
+    assert counter.true_count == 5.53
     assert counter.get_bet_multiplier() == 12
+
+def test_kelly_criterion_lite():
+    counter = CardCounter(num_decks=6)
+    # TC 0: 1 unit
+    assert counter.get_bet_multiplier() == 1
+
+    # TC 2: 4 units (based on my implementation)
+    # We need TC to be around 2.
+    # 6 decks = 312 cards.
+    # If we deal 52 cards, 5 decks left. RC 10 -> TC 2.
+    for _ in range(10):
+        counter.update_count(Card('2')) # RC 10
+    for _ in range(42):
+        counter.update_count(Card('7')) # RC 10, 52 cards dealt
+
+    assert counter.true_count == 2.0
+    assert counter.get_bet_multiplier() == 4
+
+def test_insurance_logic_visibility():
+    # This is more of an integration test for the interface,
+    # but we can check the logic here.
+    counter = CardCounter(num_decks=1)
+    for _ in range(3):
+        counter.update_count(Card('2')) # RC 3
+    # 49/52 = 0.94 decks. TC = 3 / 0.94 = 3.19
+    assert counter.true_count >= 3

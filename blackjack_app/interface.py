@@ -1,7 +1,6 @@
 import sys
 from blackjack_app.models import Card, Hand
-from blackjack_app.engine import BasicStrategy
-from blackjack_app.counter import CardCounter
+from blackjack_app.engine import BasicStrategy, CardCounter
 
 def print_header():
     print("\n" + "="*50)
@@ -14,6 +13,13 @@ def get_card_input(prompt: str) -> Card:
         if rank in ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']:
             return Card(rank)
         print("Invalid card rank. Use 2-10, J, Q, K, or A.")
+
+def display_recommendation(rec: str, tc: float, edge: float):
+    print("\n" + "-"*30)
+    print(f"RECOMMENDATION: >>> {rec} <<<")
+    print(f"Current True Count: {tc}")
+    print(f"Player Edge: {edge}%")
+    print("-"*30)
 
 def main():
     print_header()
@@ -51,6 +57,11 @@ def main():
         elif action == 'H':
             # Basic Strategy Recommendation for a new hand
             print("\n--- NEW HAND ---")
+
+            # Insurance logic
+            if counter.true_count >= 3:
+                print("\n*** ADVISORY: True Count is >= 3. TAKE INSURANCE if Dealer shows Ace. ***")
+
             d_up = get_card_input("Dealer's upcard: ")
             counter.update_count(d_up)
 
@@ -65,7 +76,8 @@ def main():
                 rec = strategy.get_recommendation(p_hand, d_up)
                 print(f"\nHand: {p_hand}")
                 print(f"Dealer: {d_up}")
-                print(f"RECOMMENDATION: >>> {rec} <<<")
+
+                display_recommendation(rec, counter.true_count, counter.player_edge)
 
                 if rec == 'Stand':
                     break
