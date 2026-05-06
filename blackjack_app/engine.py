@@ -72,6 +72,22 @@ class CardCounter:
         self.running_count = 0
         self.cards_dealt = 0
 
+class Bankroll:
+    """Manages the player's virtual bankroll."""
+    def __init__(self, initial_balance: float = 1000.0):
+        self.balance = initial_balance
+        self.initial_balance = initial_balance
+
+    def add_win(self, amount: float):
+        self.balance += amount
+
+    def subtract_loss(self, amount: float):
+        self.balance -= amount
+
+    @property
+    def profit_loss(self) -> float:
+        return self.balance - self.initial_balance
+
 class BasicStrategy:
     """
     Implements Blackjack Basic Strategy using optimized lookup tables.
@@ -101,10 +117,14 @@ class BasicStrategy:
 
         # 3. Hard Totals
         total = player_hand.total
-        if total >= 17: return 'Stand'
         if total <= 8: return 'Hit'
 
-        rec = self.tables['HARD'][total][d_idx]
-        if rec == 'D': return 'Double' if len(player_hand.cards) == 2 else 'Hit'
-        if rec == 'S': return 'Stand'
+        if total in self.tables['HARD']:
+            rec = self.tables['HARD'][total][d_idx]
+            if rec == 'R': return 'Surrender' if len(player_hand.cards) == 2 else ('Hit' if total <= 16 else 'Stand')
+            if rec == 'D': return 'Double' if len(player_hand.cards) == 2 else 'Hit'
+            if rec == 'S': return 'Stand'
+            if rec == 'H': return 'Hit'
+
+        if total >= 17: return 'Stand'
         return 'Hit'
